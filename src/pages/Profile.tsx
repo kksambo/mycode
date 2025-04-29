@@ -4,6 +4,7 @@ import "./Profile.css"; // Import the CSS file for styling
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
+  const userEmail = localStorage.getItem("userEmail"); // Retrieve the logged-in user's email
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
@@ -45,40 +46,57 @@ const Profile = () => {
   }, []);
 
   if (loading) {
-    return <p className="loading">Loading...</p>;
+    return (
+      <div className="d-flex align-items-center justify-content-center vh-100">
+      <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
+        <span className="visually-hidden">Loading...</span>
+      </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="error">{error}</p>;
+    
+    return (
+      <>
+    <div className="d-flex flex-column align-items-center justify-content-center vh-100">
+      <p className="error text-danger mb-3">{error}</p>
+      <button
+      className="btn btn-primary"
+      onClick={() => navigate("/login")}
+      >
+      Go to Login
+      </button>
+    </div>
+    </>
+  );
   }
 
   return (
-    <div className="profile-container">
+    <div className="main-container">
   <nav class="navbar navbar-expand-lg navbar-dark px-4">
-    <a class="navbar-brand" href="#">Admin Panel</a>
+    <a class="navbar-brand" href="#">{userEmail}</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link active" href="#">Dashboard</a>
+          <a class="nav-link active" href="/">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Users</a>
+          <a class="nav-link" href="#">Dispose</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Activities</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Settings</a>
-        </li>
+
         <li class="nav-item">
           <a class="nav-link text-danger" href="#">Logout</a>
         </li>
       </ul>
     </div>
   </nav>
+
+
+  <div className="profile-container">
       <h2 className="profile-title">User Profile</h2>
       {user && (
         <div className="profile-details">
@@ -94,7 +112,9 @@ const Profile = () => {
       >
         Go to Dustbin Interaction
       </button>
-    </div>
+      </div>
+      </div>
+    
   );
 };
 

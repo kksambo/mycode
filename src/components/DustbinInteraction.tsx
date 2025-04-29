@@ -1,8 +1,26 @@
-import React, { useState } from "react";
+import React, {useEffect, useState } from "react";
 import "./DustbinInteraction.css";
 import binOpeningGif from "./binGif.gif"; // Import the bin opening GIF
+import { useNavigate, Link } from "react-router-dom";
 
 const DustbinInteraction = () => {
+    const [name, setName] = React.useState("");
+    const [email, setEmail] = React.useState("");
+    useEffect(() => {
+      const token = localStorage.getItem("token");
+      const userEmail = localStorage.getItem("userEmail");
+      if (token && userEmail) {
+        setName("Logout");
+        setEmail(userEmail);
+      } else {
+        setName("login");
+      }
+    
+      if (!token || !userEmail) {
+        setName('login');
+       
+      }
+    }, []);
   const [itemImage, setItemImage] = useState<File | null>(null);
   const [classificationResult, setClassificationResult] = useState<string | null>(null);
   const [binOpen, setBinOpen] = useState(false);
@@ -32,7 +50,7 @@ const DustbinInteraction = () => {
 
     try {
       // Send the image to the Flask API
-      const response = await fetch("https://image-processing-2-thbz.onrender.com/classify", {
+      const response = await fetch("https://geminiapp-dp6r.onrender.com/classify", {
         method: "POST",
         body: formData,
       });
@@ -42,14 +60,15 @@ const DustbinInteraction = () => {
       }
 
       const result = await response.json();
+      console.log(result);
 
    
-      if (result.label !== "Unknown") {
-        setBinOpen(true); // Simulate bin opening
-        setTimeout(() => setBinOpen(false), 5000); // Close bin after 5 seconds
-        setClassificationResult(`Item accepted: ${result.label} (Confidence: ${result.confidence.toFixed(2)})`);
+      if (result.classification !== "Unknown") {
+        setBinOpen(true); 
+        setTimeout(() => setBinOpen(false), 5000); 
+        setClassificationResult(`Item accepted: ${result.classification}`);
 
-        // Reward the user with points
+       
         await rewardUser();
       } else {
         setClassificationResult("Item rejected: Unknown item.");
@@ -58,7 +77,7 @@ const DustbinInteraction = () => {
       setError(err.message);
     } finally {
       setLoading(false);
-      setItemImage(null); // Clear the selected image
+      setItemImage(null); 
     }
   };
 
@@ -85,76 +104,98 @@ const DustbinInteraction = () => {
       }
 
       const data = await response.json();
-      setRewardMessage(`Points allocated successfully! Updated Points: ${data.UpdatedPoints}`);
+      setRewardMessage(`you got yourself 10 points`);
     } catch (err: any) {
       setError(err.message);
     }
   };
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    if (name === "login") {
+      navigate("/login");
+      return;
+    }
 
+    localStorage.removeItem("token");
+    localStorage.removeItem("userEmail");
+    setEmail("");
+    setName("login");
+
+    
+    navigate("/"); 
+  };
   return (
     <div className="dustbin-interaction">
-        <nav class="navbar navbar-expand-lg navbar-dark px-4">
-    <a class="navbar-brand" href="#">Admin Panel</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link active" href="#">Dashboard</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Users</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Activities</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Settings</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-danger" href="#">Logout</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
-  <center>
-      <h2>Dustbin Interaction</h2>
-      <div className="image-upload">
-        <label htmlFor="item-image">Take a picture or select from storage:</label>
-        <input
-          type="file"
-          id="item-image"
-          accept="image/*"
-          onChange={handleImageChange}
-        />
-      </div>
-      <button onClick={handleScan} disabled={loading}>
-        {loading ? "Processing..." : "Deposit Item"}
-      </button>
-
-      {binOpen && (
-        <div className="bin-animation">
-          <img src={binOpeningGif} alt="Bin Opening" />
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
       )}
-
-      {classificationResult && (
-        <div className="classification-result">
-          <p>{classificationResult}</p>
+      <nav className="navbar navbar-expand-lg navbar-dark px-4">
+        <Link className="navbar-brand" to="#">{email}</Link>
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul className="navbar-nav">
+            <li className="nav-item">
+              <Link className="nav-link active" to="/">Home</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/profile">Profile</Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                className="nav-link text-danger"
+                to={name === "Logout" ? "/" : `/${name}`}
+                onClick={handleLogout}
+              >
+                {name}
+              </Link>
+            </li>
+          </ul>
         </div>
-      )}
-
-      {rewardMessage && (
-        <div className="reward-message">
-          <p>{rewardMessage}</p>
+      </nav>
+      <center>
+        <h2>Dustbin Interaction</h2>
+        <div className="image-upload">
+          <label htmlFor="item-image">Take a picture or select from storage:</label>
+          <input
+            type="file"
+            id="item-image"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
         </div>
-      )}
+        <button onClick={handleScan} disabled={loading}>
+          {loading ? "Processing..." : "Deposit Item"}
+        </button>
 
-      {error && <p className="error">Error: {error}</p>}
+        {binOpen && (
+          <div className="bin-animation">
+            <img src={binOpeningGif} alt="Bin Opening" />
+          </div>
+        )}
+
+        {classificationResult && (
+          <div className="classification-result">
+            <p>{classificationResult}</p>
+          </div>
+        )}
+
+        {rewardMessage && (
+          <div className="reward-message">
+            <p>{rewardMessage}</p>
+          </div>
+        )}
+
+        {error && <p className="error">Error: {error}</p>}
       </center>
     </div>
   );
 };
 
 export default DustbinInteraction;
+

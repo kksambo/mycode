@@ -9,6 +9,8 @@ import RegistrationForm from "./components/RegistrationForm.tsx";
 import DustbinInteraction from "./components/DustbinInteraction.tsx";
 import Profile from "./pages/Profile.tsx";
 import AdminConsole from "./components/AdminConsole.tsx";
+import BinManagement from "./components/BinManagement.tsx";
+import AddBinForm from "./components/AddBinForm.tsx";
 
 
 function MainApp() {
@@ -21,6 +23,8 @@ function MainApp() {
         <Route path="/dustbininteraction" element={<DustbinInteraction />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<AdminConsole />} />
+        <Route path="bins" element={< BinManagement/>} />
+        <Route path="add-bin" element={<AddBinForm/>} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,35 +1,75 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import "./Home.css"; // Import the CSS file for styling
+import "./Home.css"; 
+import { useNavigate } from "react-router-dom";
 
 function Home() {
+ 
+  const [name, setName] = React.useState("Logout");
+  const [email, setEmail] = React.useState("");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userEmail = localStorage.getItem("userEmail");
+    if (token && userEmail) {
+      setName("Logout");
+      setEmail(userEmail);
+    } else {
+      setName("login");
+    }
+  
+    if (!token || !userEmail) {
+      setName('login');
+     
+    }
+  }, []);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+
+    if (name === "login") {
+      navigate("/login");
+      return;
+    }
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("userEmail");
+    setEmail("");
+    setName("login");
+
+    
+    navigate("/"); 
+  };
+
   return (
     <div className="home-container">
-<nav class="navbar navbar-expand-lg navbar-dark px-4">
-    <a class="navbar-brand" href="#">Admin Panel</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link active" href="#">Dashboard</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/login">Users</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Activities</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Settings</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-danger" href="#">Logout</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+<nav className="navbar navbar-expand-lg navbar-dark px-4">
+  <a className="navbar-brand" href="#">{email}</a>
+  <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <span className="navbar-toggler-icon"></span>
+  </button>
+  <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+    <ul className="navbar-nav">
+      <li className="nav-item">
+        <Link className="nav-link active" to="/">Home</Link>
+      </li>
+      <li className="nav-item">
+        <Link className="nav-link" to="/profile">Profile</Link>
+      </li>
+      <li className="nav-item">
+        <Link className="nav-link" to="/dustbininteraction">Dispose</Link>
+      </li>
+      <li className="nav-item">
+        <Link
+          className="nav-link text-danger"
+          to={name === "Logout" ? "#" : `/${name}`}
+          onClick={handleLogout}
+        >
+          {name}
+        </Link>
+      </li>
+    </ul>
+  </div>
+</nav>
       <div className="home-header">
         <h1>Welcome to the Trash Management System</h1>
         <p className="lead">
